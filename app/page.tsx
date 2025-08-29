@@ -57,7 +57,7 @@ export default function Home() {
     // 1) Hent ephemeral session fra vårt API
     const body: Record<string, any> = {};
     if (useTools) {
-      body.tools = [{ type: 'mcp', name: 'example' }];
+      body.useTools = useTools;
     }
     if (connections) {
       try {
@@ -237,3 +237,4 @@ export default function Home() {
     </main>
   );
 }
+
