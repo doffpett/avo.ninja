@@ -6,6 +6,7 @@ export default function Home() {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [connected, setConnected] = useState(false);
   const [log, setLog] = useState<string[]>([]);
+  const [speaking, setSpeaking] = useState(false);
 
   async function connect() {
     if (pcRef.current) return;
@@ -20,6 +21,9 @@ export default function Home() {
     // 3) Spill av remote audio (modellens tale)
     audioRef.current = new Audio();
     audioRef.current.autoplay = true;
+    audioRef.current.onplaying = () => setSpeaking(true);
+    audioRef.current.onpause = () => setSpeaking(false);
+    audioRef.current.onended = () => setSpeaking(false);
     pc.ontrack = (e) => {
       (audioRef.current as HTMLAudioElement).srcObject = e.streams[0];
     };
@@ -59,6 +63,7 @@ export default function Home() {
     pcRef.current?.close();
     pcRef.current = null;
     setConnected(false);
+    setSpeaking(false);
   }
 
   return (
@@ -85,8 +90,18 @@ export default function Home() {
           Trykk <b>Start</b>, gi mic-tilgang og snakk. Modellen svarer med stemme i sanntid.
         </p>
         <audio ref={audioRef} />
-        <div className="bg-gray-50 border rounded p-3 h-40 overflow-auto text-xs">
-          {log.map((l, i) => <div key={i}>{l}</div>)}
+        <div className="flex items-center gap-2 text-sm">
+          <div
+            className={`w-3 h-3 rounded-full ${speaking ? 'bg-green-500 animate-pulse' : 'bg-gray-300'}`}
+          />
+          <span className="text-gray-600">{speaking ? 'Modellen snakker' : 'Stille'}</span>
+        </div>
+        <div className="bg-gray-50 border rounded p-3 h-40 overflow-auto text-xs space-y-1">
+          {log.map((l, i) => (
+            <div key={i} className="px-2 py-1 rounded bg-white border">
+              {l}
+            </div>
+          ))}
         </div>
       </div>
     </main>
