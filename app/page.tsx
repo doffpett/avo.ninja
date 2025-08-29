@@ -7,12 +7,30 @@ export default function Home() {
   const [connected, setConnected] = useState(false);
   const [log, setLog] = useState<string[]>([]);
   const [speaking, setSpeaking] = useState(false);
+  const [useTools, setUseTools] = useState(false);
+  const [connections, setConnections] = useState('');
 
   async function connect() {
     if (pcRef.current) return;
 
     // 1) Hent ephemeral session fra vårt API
-    const session = await fetch('/api/realtime-token').then(r => r.json());
+    const body: Record<string, any> = {};
+    if (useTools) {
+      body.tools = [{ type: 'mcp', name: 'example' }];
+    }
+    if (connections) {
+      try {
+        body.connections = JSON.parse(connections);
+      } catch (e) {
+        console.error('Invalid connections JSON', e);
+      }
+    }
+
+    const session = await fetch('/api/realtime-token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    }).then(r => r.json());
 
     // 2) Opprett peer connection
     const pc = new RTCPeerConnection();
@@ -85,6 +103,22 @@ export default function Home() {
           >
             Stopp
           </button>
+        </div>
+        <div className="space-y-2">
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={useTools}
+              onChange={(e) => setUseTools(e.target.checked)}
+            />
+            Aktiver tools
+          </label>
+          <textarea
+            className="w-full border rounded p-2 text-sm"
+            placeholder="Connections JSON"
+            value={connections}
+            onChange={(e) => setConnections(e.target.value)}
+          />
         </div>
         <p className="text-sm text-gray-600">
           Trykk <b>Start</b>, gi mic-tilgang og snakk. Modellen svarer med stemme i sanntid.
