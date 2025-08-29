@@ -1,0 +1,11 @@
+# Node/Next/Vercel
+node_modules
+.next
+.vercel
+dist
+*.log
+
+# Miljøfiler – VIKTIG
+.env
+.env.*
+!.env.example
